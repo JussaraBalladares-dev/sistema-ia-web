@@ -1,0 +1,53 @@
+version: '3'
+services:
+
+  web:
+    container_name: web
+    image: php:8.3-rc-apache
+#    restart: always
+    volumes:
+      - ./web/_docker/apache2.conf:/etc/apache2/apache2.conf
+      - ./web/_docker/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ./web:/var/www/html
+    ports:
+      - 80:80
+    command: >
+      bash -c '
+      echo "paso 1/10" && apt-get update && apt-get install -y gnupg2 apt-transport-https unzip wget lsb-release ca-certificates curl &&
+      echo "paso 2/10" && curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg &&
+      echo "paso 3/10" && echo "deb [arch=amd64] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list &&
+      echo "paso 4/10" && apt-get update && ACCEPT_EULA=Y apt-get install -y unixodbc-dev msodbcsql17 &&
+      echo "paso 5/10" && pecl install pdo_sqlsrv sqlsrv &&
+      echo "paso 6/10" && docker-php-ext-enable pdo_sqlsrv sqlsrv &&
+      echo "paso 7/10" && apt-get install -y libzip-dev zip libonig-dev libpng-dev && docker-php-ext-install pdo_mysql zip mbstring gd &&
+      echo "paso 8/10" && curl -sS https://getcomposer.org/installer -o composer-setup.php && HASH=$$(curl -sS https://composer.github.io/installer.sig) &&
+      echo "paso 9/10" && php composer-setup.php --install-dir=/usr/local/bin --filename=composer &&
+      echo "paso 10/10" && if ! a2query -m rewrite | grep -q enabled; then a2enmod rewrite; fi &&
+      chmod 777 -R /var/www/html/storage/ &&
+      cd /var/www/html && composer install --no-interaction --prefer-dist --no-dev &&
+      /usr/local/bin/docker-php-entrypoint apache2-foreground'
+    networks:
+      - red-principal
+
+  api:
+    container_name: api
+    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    volumes:
+      - ./api:/app
+    ports:
+      - "81:8000"
+    command: >
+      bash -c "
+      echo 'Instalando dependencias...' &&
+      pip install --no-cache-dir -r requirements.txt &&
+      echo 'Iniciando servidor...' &&
+      uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    networks:
+      - red-principal
+
+networks:
+  red-principal:
+    name: red-principal

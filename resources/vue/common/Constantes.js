@@ -1,0 +1,16 @@
+export default {
+    RolLider: 1,
+    RolDesarrollador: 2,
+    // //urlApi: 'http://127.0.0.1:8000/api',
+    // //urlPDFResultado: 'http://127.0.0.1:8000/api/resultados/pdf-resultado',
+    // //urlApi: 'https://desarrollo.escalabs.com/api',
+    // //urlPDFResultado: 'https://desarrollo.escalabs.com/api/resultados/pdf-resultado',
+    // urlApi: 'https://escalabs.com/api',
+    // urlPDFResultado: 'https://escalabs.com/api/resultados/pdf-resultado',
+    // TipoEmpresa: "E",
+    // TipoMedico: "M",
+    // Codigo200: 200,
+    // Codigo201: 201,
+    // TipoBusquedaMasBuscado: "MB",
+    // TipoBusquedaAlfabetico: "OA",
+}
